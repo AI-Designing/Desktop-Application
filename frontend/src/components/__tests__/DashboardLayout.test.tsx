@@ -1,20 +1,35 @@
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider } from '@mui/material/styles';
+import { SessionProvider } from 'next-auth/react';
 import DashboardLayout from '../DashboardLayout';
 import { darkTheme } from '../../theme';
 
-// Helper function to render with theme
-const renderWithTheme = (component: React.ReactElement) => {
+// Mock NextAuth
+jest.mock('next-auth/react', () => ({
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSession: jest.fn(() => ({
+    data: null,
+    status: 'unauthenticated',
+    update: jest.fn(),
+  })),
+  signIn: jest.fn(),
+  signOut: jest.fn(),
+}));
+
+// Helper function to render with theme and session
+const renderWithProviders = (component: React.ReactElement) => {
   return render(
-    <ThemeProvider theme={darkTheme}>
-      {component}
-    </ThemeProvider>
+    <SessionProvider session={null}>
+      <ThemeProvider theme={darkTheme}>
+        {component}
+      </ThemeProvider>
+    </SessionProvider>
   );
 };
 
 describe('DashboardLayout', () => {
   it('should render three distinct panels', () => {
-    renderWithTheme(<DashboardLayout />);
+    renderWithProviders(<DashboardLayout />);
     
     // Check for the presence of three panels
     expect(screen.getByTestId('current-work-panel')).toBeInTheDocument();
@@ -23,7 +38,7 @@ describe('DashboardLayout', () => {
   });
 
   it('should have proper dark theme styling', () => {
-    renderWithTheme(<DashboardLayout />);
+    renderWithProviders(<DashboardLayout />);
     
     const currentWorkPanel = screen.getByTestId('current-work-panel');
     const previousWorkPanel = screen.getByTestId('previous-work-panel');

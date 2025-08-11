@@ -7,11 +7,12 @@ import StopIcon from '@mui/icons-material/Stop';
 
 interface CommandPanelProps {
   onSubmit: (command: string) => void;
+  onExport?: (format: string) => void;
   isGenerating?: boolean;
   onStop?: () => void;
 }
 
-const CommandPanel = ({ onSubmit, isGenerating = false, onStop }: CommandPanelProps) => {
+const CommandPanel = ({ onSubmit, onExport, isGenerating = false, onStop }: CommandPanelProps) => {
   const [command, setCommand] = useState('');
 
   const handleSubmit = () => {
@@ -54,14 +55,25 @@ const CommandPanel = ({ onSubmit, isGenerating = false, onStop }: CommandPanelPr
             Stop
           </Button>
         ) : (
-          <Button
-            variant="contained"
-            startIcon={<SendIcon />}
-            onClick={handleSubmit}
-            disabled={!command.trim()}
-          >
-            Generate
-          </Button>
+          <>
+            <Button
+              variant="contained"
+              startIcon={<SendIcon />}
+              onClick={handleSubmit}
+              disabled={!command.trim()}
+            >
+              Generate
+            </Button>
+            {onExport && (
+              <Button
+                variant="outlined"
+                onClick={() => onExport('STL')}
+                disabled={isGenerating}
+              >
+                Export STL
+              </Button>
+            )}
+          </>
         )}
       </Stack>
     </Box>

@@ -128,6 +128,41 @@ const DashboardLayout = () => {
     }]);
   };
 
+  const handleExport = useCallback(async (format: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.electronAPI) {
+        const result = await window.electronAPI.exportFile(format);
+        
+        if (result.success) {
+          setLogs(prev => [...prev, {
+            timestamp: new Date().toLocaleTimeString(),
+            message: `✅ Exported to: ${result.filePath}`,
+            status: 'success'
+          }]);
+        } else {
+          setLogs(prev => [...prev, {
+            timestamp: new Date().toLocaleTimeString(),
+            message: `❌ Export failed: ${result.error}`,
+            status: 'error'
+          }]);
+        }
+      } else {
+        // Fallback for web development
+        setLogs(prev => [...prev, {
+          timestamp: new Date().toLocaleTimeString(),
+          message: `✅ Mock: Would export file as ${format}`,
+          status: 'success'
+        }]);
+      }
+    } catch (error) {
+      setLogs(prev => [...prev, {
+        timestamp: new Date().toLocaleTimeString(),
+        message: `❌ Export error: ${error}`,
+        status: 'error'
+      }]);
+    }
+  }, []);
+
   const handleStop = useCallback(() => {
     setIsGenerating(false);
     setCurrentStatus('');
@@ -225,6 +260,7 @@ const DashboardLayout = () => {
         </Typography>
         <CommandPanel
           onSubmit={handleCommand}
+          onExport={handleExport}
           isGenerating={isGenerating}
           onStop={handleStop}
         />
